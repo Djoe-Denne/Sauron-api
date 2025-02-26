@@ -1,0 +1,278 @@
+openapi: 3.0.3
+info:
+  title: AI Authentication & Query API
+  description: API for securely managing AI provider authentication using JWT and making AI queries with optional images.
+  version: 1.1.0
+
+servers:
+  - url: http://localhost:3000
+
+paths:
+  /auth/login:
+    post:
+      summary: Authenticate with an AI provider and receive a JWT token
+      description: Clients provide an API key and specify the AI provider. The API key is encrypted and exchanged for a JWT token.
+      tags:
+        - auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - api_key
+                - provider
+              properties:
+                api_key:
+                  type: string
+                  description: The AI provider's API key.
+                provider:
+                  type: string
+                  enum: [openai, anthropic, google, mistral, custom]
+                  description: The AI provider to use.
+      responses:
+        "200":
+          description: Authentication successful, JWT token returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: JWT token for authentication.
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "401":
+          description: Authentication failed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /auth/refresh:
+    post:
+      summary: Refresh JWT token
+      description: Renew the authentication token before expiration.
+      tags:
+        - auth
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: New JWT token issued.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+        "401":
+          description: Invalid or expired token.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /ai/query:
+    post:
+      summary: Send a request to the AI provider
+      description: Clients send a query using their JWT token. The server decrypts the API key and forwards the request to the appropriate AI provider.
+      tags:
+        - ai
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+                - provider
+              properties:
+                provider:
+                  type: string
+                  enum: [openai, anthropic, google, mistral, custom]
+                  description: The AI provider to use.
+                model:
+                  type: string
+                  description: The AI model to use (e.g., gpt-4, claude-3, gemini).
+                  default: "default"
+                prompt:
+                  type: string
+                  description: The user's query to the AI.
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: An array of base64-encoded images to provide additional context.
+      responses:
+        "200":
+          description: AI response.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  response:
+                    type: string
+                    description: AI-generated response.
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "401":
+          description: Unauthorized access (invalid JWT token).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /ai/query/stream:
+    post:
+      summary: Stream a request to the AI provider
+      description: Stream a response from the AI provider using server-sent events.
+      tags:
+        - ai
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - prompt
+                - provider
+              properties:
+                provider:
+                  type: string
+                  enum: [openai, anthropic, google, mistral, custom]
+                  description: The AI provider to use.
+                model:
+                  type: string
+                  description: The AI model to use (e.g., gpt-4, claude-3, gemini).
+                  default: "default"
+                prompt:
+                  type: string
+                  description: The user's query to the AI.
+                images:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: An array of base64-encoded images to provide additional context.
+      responses:
+        "200":
+          description: Streaming AI response.
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: Server-sent events stream with AI-generated response.
+        "400":
+          description: Invalid request.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "401":
+          description: Unauthorized access (invalid JWT token).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "500":
+          description: Server error.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Check if the API is running correctly.
+      tags:
+        - system
+      responses:
+        "200":
+          description: API is healthy.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
