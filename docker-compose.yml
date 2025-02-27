@@ -1,0 +1,8 @@
+version: '3'
+services:
+  generator:
+    build: .
+    volumes:
+      - ./:/local
+    environment:
+      - OPENAPI_GENERATOR_VERSION=7.2.0 
