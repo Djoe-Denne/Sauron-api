@@ -33,24 +33,17 @@ paths:
                   description: The AI provider to use.
       responses:
         "200":
-          description: Authentication successful, JWT token returned.
+          description: Authentication successful, JWT token returned
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  token:
-                    type: string
-                    description: JWT token for authentication.
+                $ref: '#/components/schemas/TokenResponse'
         "400":
           description: Invalid request.
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
+                $ref: '#/components/schemas/Error'
         "401":
           description: Authentication failed.
           content:
@@ -120,28 +113,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - prompt
-                - provider
-              properties:
-                provider:
-                  type: string
-                  enum: [openai, anthropic, google, mistral, custom]
-                  description: The AI provider to use.
-                model:
-                  type: string
-                  description: The AI model to use (e.g., gpt-4, claude-3, gemini).
-                  default: "default"
-                prompt:
-                  type: string
-                  description: The user's query to the AI.
-                images:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
-                  description: An array of base64-encoded images to provide additional context.
+              $ref: '#/components/schemas/AIQueryRequest'
       responses:
         "200":
           description: AI response.
@@ -158,10 +130,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  error:
-                    type: string
+                $ref: '#/components/schemas/Error'
         "401":
           description: Unauthorized access (invalid JWT token).
           content:
@@ -194,28 +163,7 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - prompt
-                - provider
-              properties:
-                provider:
-                  type: string
-                  enum: [openai, anthropic, google, mistral, custom]
-                  description: The AI provider to use.
-                model:
-                  type: string
-                  description: The AI model to use (e.g., gpt-4, claude-3, gemini).
-                  default: "default"
-                prompt:
-                  type: string
-                  description: The user's query to the AI.
-                images:
-                  type: array
-                  items:
-                    type: string
-                    format: binary
-                  description: An array of base64-encoded images to provide additional context.
+              $ref: '#/components/schemas/AIQueryRequest'
       responses:
         "200":
           description: Streaming AI response.
@@ -271,6 +219,52 @@ paths:
                     enum: [ok]
 
 components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message describing what went wrong
+    
+    TokenResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: JWT token for authentication
+    
+    AIQueryRequest:
+      type: object
+      required:
+        - prompt
+        - provider
+      properties:
+        provider:
+          type: string
+          enum: [openai, anthropic, google, mistral, custom]
+          description: The AI provider to use
+        model:
+          type: string
+          description: The AI model to use (e.g., gpt-4, claude-3, gemini)
+          default: "default"
+        prompt:
+          type: string
+          description: The user's query to the AI
+        images:
+          type: array
+          items:
+            type: string
+            format: binary
+          description: An array of base64-encoded images to provide additional context
+    
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [ok]
+  
   securitySchemes:
     bearerAuth:
       type: http
