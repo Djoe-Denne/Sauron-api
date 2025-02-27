@@ -88,7 +88,7 @@ public:
     nlohmann::json toJson() const override {
         nlohmann::json json;
         json["prompt"] = prompt;
-        json["provider"] = toString(provider);
+        json["provider"] = AIProviderToString(provider);
         
         if (!model.empty()) {
             json["model"] = model;

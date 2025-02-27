@@ -4,7 +4,7 @@ A C++ SDK for the Sauron AI Authentication & Query API.
 
 ## Overview
 
-This SDK provides a C++ interface for securely managing AI provider authentication using JWT and making AI queries with optional images.
+This SDK provides a header-only C++ interface for securely managing AI provider authentication using JWT and making AI queries with optional images.
 
 ## Features
 
@@ -13,22 +13,33 @@ This SDK provides a C++ interface for securely managing AI provider authenticati
 - AI query support with optional image attachments
 - Streaming response support
 - Strong typing and validation for all DTOs
+- Header-only implementation for easy integration
 
 ## Requirements
 
 - C++17 or higher
 - CMake 3.14 or higher
-- libcurl
-- nlohmann_json
+- nlohmann_json (automatically fetched if not found)
 
 ## Installation
 
 ### Using CMake
 
+Add to your CMakeLists.txt:
+
+```cmake
+# Add the Sauron SDK directory
+add_subdirectory(path/to/sauron-sdk)
+
+# Link against the SDK
+target_link_libraries(your_target PRIVATE sauron_sdk)
+```
+
+Or install system-wide:
+
 ```bash
 mkdir build && cd build
 cmake ..
-make
 make install
 ```
 
@@ -41,8 +52,9 @@ make install
 #include <iostream>
 
 int main() {
-    // Create a client
-    sauron::client::SauronClient client("http://localhost:3000");
+    // Create a client with custom HTTP implementation
+    auto httpClient = std::make_unique<YourHttpClient>();
+    sauron::client::SauronClient client(std::move(httpClient));
     
     try {
         // Login with OpenAI
@@ -74,7 +86,9 @@ int main() {
 #include <iostream>
 
 int main() {
-    sauron::client::SauronClient client("http://localhost:3000");
+    // Create a client with custom HTTP implementation
+    auto httpClient = std::make_unique<YourHttpClient>();
+    sauron::client::SauronClient client(std::move(httpClient));
     
     try {
         // Login with Anthropic

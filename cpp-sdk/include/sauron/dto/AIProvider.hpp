@@ -24,7 +24,7 @@ enum class AIProvider {
  * @param provider The AIProvider enum value
  * @return std::string The string representation
  */
-inline std::string toString(AIProvider provider) {
+inline std::string AIProviderToString(AIProvider provider) {
     switch (provider) {
         case AIProvider::OPENAI:
             return "openai";

@@ -61,7 +61,7 @@ public:
     nlohmann::json toJson() const override {
         nlohmann::json json;
         json["api_key"] = apiKey;
-        json["provider"] = toString(provider);
+        json["provider"] = AIProviderToString(provider);
         return json;
     }
 
