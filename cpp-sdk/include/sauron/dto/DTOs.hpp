@@ -8,6 +8,7 @@
 #include "AIProvider.hpp"
 #include "AIQueryRequest.hpp"
 #include "AIQueryResponse.hpp"
+#include "AIAlgorithmResponse.hpp"
 #include "BaseDTO.hpp"
 #include "Error.hpp"
 #include "HealthResponse.hpp"

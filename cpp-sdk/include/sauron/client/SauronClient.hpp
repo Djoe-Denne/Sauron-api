@@ -126,6 +126,26 @@ public:
         return dto::HealthResponse::fromJson(nlohmann::json::parse(response.body));
     }
 
+    /**
+     * @brief Send an algorithm query to an AI provider
+     *
+     * @param request The AI query request
+     * @return dto::AIAlgorithmResponse The AI algorithm response
+     * @throws std::runtime_error if the request fails
+     */
+    dto::AIAlgorithmResponse queryAlgorithm(const dto::AIQueryRequest& request) {
+        request.validate();
+        if (token_.empty()) {
+            throw std::runtime_error("No token available. Please login first.");
+        }
+        httpClient_->setBearerToken(token_);
+        auto response = httpClient_->post("/ai/query/algorithm", request.toJson());
+        if (response.statusCode != 200) {
+            throw std::runtime_error(dto::Error::fromJson(nlohmann::json::parse(response.body)).getError());
+        }
+        return dto::AIAlgorithmResponse::fromJson(nlohmann::json::parse(response.body));
+    }
+
     void setToken(const std::string& token) {
         token_ = token;
         httpClient_->setBearerToken(token);
