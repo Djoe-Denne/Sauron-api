@@ -29,7 +29,7 @@ public:
     /**
      * @brief Destructor
      */
-    ~SauronClient() = default;
+    virtual ~SauronClient() = default;
     SauronClient(SauronClient&&) noexcept = default;
     SauronClient& operator=(SauronClient&&) noexcept = default;
 
@@ -40,7 +40,7 @@ public:
      * @return dto::TokenResponse The token response
      * @throws std::runtime_error if the request fails
      */
-    dto::TokenResponse login(const dto::LoginRequest& request) {
+    virtual dto::TokenResponse login(const dto::LoginRequest& request) {
         request.validate();
         auto response = httpClient_->post("/auth/login", request.toJson());
         if (response.statusCode != 200) {
@@ -57,7 +57,7 @@ public:
      * @return dto::TokenResponse The new token response
      * @throws std::runtime_error if the request fails
      */
-    dto::TokenResponse refreshToken() {
+    virtual dto::TokenResponse refreshToken() {
         if (token_.empty()) {
             throw std::runtime_error("No token available for refresh");
         }
@@ -78,7 +78,7 @@ public:
      * @return dto::AIQueryResponse The AI response
      * @throws std::runtime_error if the request fails
      */
-    dto::AIQueryResponse query(const dto::AIQueryRequest& request) {
+    virtual dto::AIQueryResponse query(const dto::AIQueryRequest& request) {
         request.validate();
         if (token_.empty()) {
             throw std::runtime_error("No token available. Please login first.");
@@ -99,7 +99,7 @@ public:
      * @return bool True if the request was successful
      * @throws std::runtime_error if the request fails
      */
-    bool queryStream(const dto::AIQueryRequest& request, const std::function<bool(const std::string&, bool)>& callback) {
+    virtual bool queryStream(const dto::AIQueryRequest& request, const std::function<bool(const std::string&, bool)>& callback) {
         request.validate();
         if (token_.empty()) {
             throw std::runtime_error("No token available. Please login first.");
@@ -118,7 +118,7 @@ public:
      * @return dto::HealthResponse The health response
      * @throws std::runtime_error if the request fails
      */
-    dto::HealthResponse checkHealth() {
+    virtual dto::HealthResponse checkHealth() {
         auto response = httpClient_->get("/health");
         if (response.statusCode != 200) {
             throw std::runtime_error(dto::Error::fromJson(nlohmann::json::parse(response.body)).getError());
@@ -133,7 +133,7 @@ public:
      * @return dto::AIAlgorithmResponse The AI algorithm response
      * @throws std::runtime_error if the request fails
      */
-    dto::AIAlgorithmResponse queryAlgorithm(const dto::AIQueryRequest& request) {
+    virtual dto::AIAlgorithmResponse queryAlgorithm(const dto::AIQueryRequest& request) {
         request.validate();
         if (token_.empty()) {
             throw std::runtime_error("No token available. Please login first.");
@@ -146,14 +146,27 @@ public:
         return dto::AIAlgorithmResponse::fromJson(nlohmann::json::parse(response.body));
     }
 
-    void setToken(const std::string& token) {
+    /**
+     * @brief Set the JWT token
+     *
+     * @param token The JWT token
+     */
+    virtual void setToken(const std::string& token) {
         token_ = token;
         httpClient_->setBearerToken(token);
     }
 
-    std::string getToken() const { return token_; }
+    /**
+     * @brief Get the JWT token
+     *
+     * @return std::string The JWT token
+     */
+    virtual std::string getToken() const { return token_; }
 
-    void clearToken() {
+    /**
+     * @brief Clear the JWT token
+     */
+    virtual void clearToken() {
         token_.clear();
         httpClient_->clearAuthorization();
     }
